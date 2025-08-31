@@ -21,8 +21,7 @@ import java.util.Objects;
 
 @AllArgsConstructor
 @RestController
-public class AuthController
-{
+public class AuthController {
 
     @Autowired
     private JwtService jwtService;
@@ -34,17 +33,17 @@ public class AuthController
     private UserDetailsServiceImpl userDetailsService;
 
     @PostMapping("auth/v1/signup")
-    public ResponseEntity SignUp(@RequestBody UserInfoDto userInfoDto){
-        try{
+    public ResponseEntity<?> SignUp(@RequestBody UserInfoDto userInfoDto) {
+        try {
             String userId = userDetailsService.signupUser(userInfoDto);
-            if(Objects.isNull(userId)){
+            if (Objects.isNull(userId)) {
                 return new ResponseEntity<>("Already Exist", HttpStatus.BAD_REQUEST);
             }
             RefreshToken refreshToken = refreshTokenService.createRefreshToken(userInfoDto.getUsername());
-            String jwtToken = jwtService.GenerateToken(userInfoDto.getUsername());
-            return new ResponseEntity<>(JwtResponseDTO.builder().accessToken(jwtToken).
-                    token(refreshToken.getToken()).userId(userId).build(), HttpStatus.OK);
-        }catch (Exception ex){
+            String jwtToken = jwtService.generateToken(userInfoDto.getUsername());
+            return new ResponseEntity<>(JwtResponseDTO.builder().accessToken(jwtToken).token(refreshToken.getToken())
+                    .userId(userId).build(), HttpStatus.OK);
+        } catch (Exception ex) {
             return new ResponseEntity<>("Exception in User Service", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -54,7 +53,7 @@ public class AuthController
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated()) {
             String userId = userDetailsService.getUserByUsername(authentication.getName());
-            if(Objects.nonNull(userId)){
+            if (Objects.nonNull(userId)) {
                 return ResponseEntity.ok(userId);
             }
         }
@@ -62,7 +61,7 @@ public class AuthController
     }
 
     @GetMapping("/health")
-    public ResponseEntity<Boolean> checkHealth(){
+    public ResponseEntity<Boolean> checkHealth() {
         return new ResponseEntity<>(true, HttpStatus.OK);
     }
 

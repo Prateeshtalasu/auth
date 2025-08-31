@@ -9,7 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -24,28 +24,20 @@ import java.util.UUID;
 @Component
 @AllArgsConstructor
 @Data
-public class UserDetailsServiceImpl implements UserDetailsService
-{
+public class UserDetailsServiceImpl implements UserDetailsService {
 
-    @Autowired
     private final UserRepository userRepository;
-
-    @Autowired
     private final PasswordEncoder passwordEncoder;
-
-    @Autowired
     private final UserInfoProducer userInfoProducer;
-
 
     private static final Logger log = LoggerFactory.getLogger(UserDetailsServiceImpl.class);
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException
-    {
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
         log.debug("Entering in loadUserByUsername Method...");
         UserInfo user = userRepository.findByUsername(username);
-        if(user == null){
+        if (user == null) {
             log.error("Username not found: " + username);
             throw new UsernameNotFoundException("could not found user..!!");
         }
@@ -53,14 +45,14 @@ public class UserDetailsServiceImpl implements UserDetailsService
         return new CustomUserDetails(user);
     }
 
-    public UserInfo checkIfUserAlreadyExist(UserInfoDto userInfoDto){
+    public UserInfo checkIfUserAlreadyExist(UserInfoDto userInfoDto) {
         return userRepository.findByUsername(userInfoDto.getUsername());
     }
 
-    public String signupUser(UserInfoDto userInfoDto){
-        //        ValidationUtil.validateUserAttributes(userInfoDto);
+    public String signupUser(UserInfoDto userInfoDto) {
+        // ValidationUtil.validateUserAttributes(userInfoDto);
         userInfoDto.setPassword(passwordEncoder.encode(userInfoDto.getPassword()));
-        if(Objects.nonNull(checkIfUserAlreadyExist(userInfoDto))){
+        if (Objects.nonNull(checkIfUserAlreadyExist(userInfoDto))) {
             return null;
         }
         String userId = UUID.randomUUID().toString();
@@ -71,11 +63,11 @@ public class UserDetailsServiceImpl implements UserDetailsService
         return userId;
     }
 
-    public String getUserByUsername(String userName){
+    public String getUserByUsername(String userName) {
         return Optional.of(userRepository.findByUsername(userName)).map(UserInfo::getUserId).orElse(null);
     }
 
-    private UserInfoEvent userInfoEventToPublish(UserInfoDto userInfoDto, String userId){
+    private UserInfoEvent userInfoEventToPublish(UserInfoDto userInfoDto, String userId) {
         return UserInfoEvent.builder()
                 .userId(userId)
                 .firstName(userInfoDto.getUsername())
